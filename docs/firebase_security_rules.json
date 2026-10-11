@@ -1,0 +1,54 @@
+{
+  "_comment": "NeX_Drop Firebase Security Rules — PRD FR-6, §9.1",
+  "_deploy": "Firebase Console → Realtime Database → Rules → Paste & Publish",
+  "_owner": "Guna (Cloud Infrastructure) — core/backend",
+
+  "rules": {
+    "devices": {
+      "$device_id": {
+
+        "active_mode": {
+          "_comment": "PRD §9.1: Write = admin only. Read = authenticated device.",
+          ".read":  "auth != null",
+          ".write": "auth != null && auth.uid === root.child('devices').child($device_id).child('admin_uid').val()"
+        },
+
+        "last_ping": {
+          "_comment": "Windows client writes heartbeat. Admin reads status.",
+          ".read":  "auth != null",
+          ".write": "auth != null"
+        },
+
+        "mode_history": {
+          "_comment": "Android admin writes history. Windows reads only.",
+          ".read":  "auth != null",
+          ".write": "auth != null && auth.uid === root.child('devices').child($device_id).child('admin_uid').val()"
+        },
+
+        "admin_uid": {
+          "_comment": "Read-only for all authenticated. Set once during device registration.",
+          ".read":  "auth != null",
+          ".write": false
+        },
+
+        "offline_alert": {
+          "_comment": "Windows writes when offline detected. Admin reads for push notification.",
+          ".read":  "auth != null",
+          ".write": "auth != null"
+        }
+      }
+    },
+
+    "remote_app_link": {
+      "_comment": "PRD FR-7: Android admin writes URL. Windows reads and downloads.",
+      ".read":  "auth != null",
+      ".write": "auth != null"
+    },
+
+    "$other": {
+      "_comment": "PRD §9.1: No anonymous read or write at any layer.",
+      ".read":  false,
+      ".write": false
+    }
+  }
+}
